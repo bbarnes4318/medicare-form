@@ -143,25 +143,28 @@ def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_
         if json_str.startswith('\\"'):
             json_str = json_str[2:-2] if json_str.endswith('\\"') else json_str[2:]
         
-        # Replace escaped newlines with actual newlines for private key
-        # When DigitalOcean stores \\n, Python reads it as literal backslash-n (2 chars)
-        # We need to replace the literal backslash-n with actual newline
-        # Try multiple patterns to handle different storage formats
-        # Replace literal \n (backslash followed by n) with actual newline
-        json_str = re.sub(r'\\n', '\n', json_str)
-        # Also handle if it was double-escaped (\\\\n becomes \\n in Python)
-        json_str = re.sub(r'\\\\n', '\n', json_str)
-        
-        # Try to parse JSON
+        # IMPORTANT: Parse JSON FIRST, then fix newlines in the parsed dict
+        # If we replace \\n with \n before parsing, it breaks JSON syntax
+        # JSON requires \\n (double backslash) to be valid
         try:
             creds_dict = json.loads(json_str)
         except json.JSONDecodeError as je:
             print(f"ERROR: JSON parse failed: {je}")
             print(f"DEBUG: JSON string (first 500 chars): {json_str[:500]}")
-            # Try one more time with unescaping
-            import codecs
-            json_str = codecs.decode(json_str, 'unicode_escape')
-            creds_dict = json.loads(json_str)
+            # Try decoding with unicode_escape if first attempt failed
+            try:
+                import codecs
+                json_str_decoded = codecs.decode(json_str, 'unicode_escape')
+                creds_dict = json.loads(json_str_decoded)
+            except Exception as e2:
+                print(f"ERROR: Second parse attempt also failed: {e2}")
+                return False
+        
+        # NOW replace escaped newlines in the private_key value
+        # After JSON parsing, \\n becomes a string with literal backslash-n
+        if 'private_key' in creds_dict:
+            # Replace literal \n (backslash-n) with actual newline
+            creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
         
         # Validate required fields
         required_fields = ['type', 'project_id', 'private_key', 'client_email']
