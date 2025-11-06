@@ -186,6 +186,18 @@ def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_
         # Get or create worksheet
         try:
             worksheet = spreadsheet.worksheet(GOOGLE_SHEETS_WORKSHEET_NAME)
+            # Check if headers exist (check if first row is empty or doesn't match expected headers)
+            first_row = worksheet.row_values(1)
+            expected_headers = [
+                'Timestamp', 'Agent', 'State', 'Zip Code', 'First Name', 'Last Name', 
+                'Phone', 'Email', 'Disclosure (TCPA Consent)', 'LeadID Token', 
+                'TrustedForm Certificate URL', 'TrustedForm Token', 'TrustedForm Ping URL', 
+                'Proxy IP', 'Submission Status', 'Landing Page Response'
+            ]
+            # If first row is empty or doesn't match, add headers
+            if not first_row or first_row[0] != 'Timestamp':
+                worksheet.insert_row(expected_headers, 1)
+                print("Added headers to existing worksheet")
         except gspread.exceptions.WorksheetNotFound:
             worksheet = spreadsheet.add_worksheet(title=GOOGLE_SHEETS_WORKSHEET_NAME, rows=1000, cols=20)
             # Add headers if new worksheet
