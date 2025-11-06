@@ -105,13 +105,39 @@ def generate_trustedform_certificate():
 
 def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_status=None):
     """Save form submission data to Google Sheets"""
-    if not GOOGLE_SHEETS_AVAILABLE or not GOOGLE_SHEETS_CREDENTIALS_JSON or not GOOGLE_SHEETS_SPREADSHEET_ID:
-        print("Google Sheets not configured. Skipping save.")
+    if not GOOGLE_SHEETS_AVAILABLE:
+        print("Google Sheets libraries not installed. Skipping save.")
+        return False
+    
+    if not GOOGLE_SHEETS_CREDENTIALS_JSON:
+        print("ERROR: GOOGLE_SHEETS_CREDENTIALS_JSON not set in environment variables!")
+        return False
+    
+    if not GOOGLE_SHEETS_SPREADSHEET_ID:
+        print("ERROR: GOOGLE_SHEETS_SPREADSHEET_ID not set in environment variables!")
         return False
     
     try:
         # Parse credentials from JSON string
-        creds_dict = json.loads(GOOGLE_SHEETS_CREDENTIALS_JSON)
+        # Handle case where JSON might be stored with escaped quotes or as string
+        json_str = GOOGLE_SHEETS_CREDENTIALS_JSON.strip()
+        
+        # Remove surrounding quotes if present
+        if json_str.startswith('"') and json_str.endswith('"'):
+            json_str = json_str[1:-1]
+        
+        # Replace escaped newlines with actual newlines for private key
+        json_str = json_str.replace('\\n', '\n')
+        
+        creds_dict = json.loads(json_str)
+        
+        # Validate required fields
+        required_fields = ['type', 'project_id', 'private_key', 'client_email']
+        missing_fields = [field for field in required_fields if field not in creds_dict]
+        if missing_fields:
+            print(f"ERROR: Missing required fields in credentials: {missing_fields}")
+            return False
+        
         creds = Credentials.from_service_account_info(creds_dict)
         scoped_creds = creds.with_scopes([
             'https://www.googleapis.com/auth/spreadsheets',
@@ -161,8 +187,28 @@ def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_
         print(f"Successfully saved form submission to Google Sheets")
         return True
         
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON format in GOOGLE_SHEETS_CREDENTIALS_JSON: {e}")
+        print(f"JSON length: {len(GOOGLE_SHEETS_CREDENTIALS_JSON)}")
+        print(f"JSON preview (first 100 chars): {GOOGLE_SHEETS_CREDENTIALS_JSON[:100]}")
+        return False
     except Exception as e:
-        print(f"Error saving to Google Sheets: {e}")
+        error_msg = str(e)
+        print(f"Error saving to Google Sheets: {error_msg}")
+        
+        # Provide helpful error messages
+        if "No key could be detected" in error_msg or "private_key" in error_msg.lower():
+            print("ERROR: Google Sheets credentials JSON is missing or invalid.")
+            print("Please check:")
+            print("1. GOOGLE_SHEETS_CREDENTIALS_JSON is set in DigitalOcean environment variables")
+            print("2. JSON is valid and on a single line")
+            print("3. Private key has \\n escaped as \\\\n (double backslash)")
+        elif "WorksheetNotFound" in error_msg:
+            print(f"Note: Worksheet '{GOOGLE_SHEETS_WORKSHEET_NAME}' will be created automatically")
+        elif "Permission denied" in error_msg.lower() or "403" in error_msg:
+            print("ERROR: Service account doesn't have access to the spreadsheet.")
+            print("Please share the spreadsheet with the service account email.")
+        
         return False
 
 def submit_form_through_proxy(form_data, trustedform_url):
