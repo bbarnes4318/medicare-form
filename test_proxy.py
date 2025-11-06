@@ -3,11 +3,11 @@ Simple test script to verify the proxy connection works
 """
 import requests
 
-# IPRoyal residential proxy configuration
-PROXY_HOST = "geo.iproyal.com"
-PROXY_PORT = 12321
-PROXY_USER = "TmwjTsVQHgTiXElI"
-PROXY_PASS = "Topproducer2026_country-us_city-lasvegas_session-pv8aCbkq_lifetime-168h"
+# Decodo residential proxy configuration
+PROXY_HOST = "us.decodo.com"
+PROXY_PORT = 10000
+PROXY_USER = "sp12ay6sup"
+PROXY_PASS = "3mo2E1_R0ksylXqdmN"
 
 # Construct proxy URL
 proxy_url = f'http://{PROXY_USER}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}'
@@ -47,9 +47,9 @@ def test_connection():
         error_str = str(e)
         
         if '402' in error_str or 'Payment Required' in error_str:
-            print(f"⚠️  402 Payment Required - Your IPRoyal account needs payment or credentials expired")
+            print(f"⚠️  402 Payment Required - Your Decodo account needs payment or credentials expired")
             print(f"\n📋 What to do:")
-            print(f"   1. Log into https://iproyal.com")
+            print(f"   1. Log into https://decodo.com")
             print(f"   2. Check your account balance/credits")
             print(f"   3. Verify your proxy credentials are still valid")
             print(f"   4. Update credentials in app.py if needed")
@@ -68,7 +68,7 @@ def test_connection():
         print(f"\n❌ REQUEST ERROR:")
         error_str = str(e)
         if '402' in error_str or 'Payment Required' in error_str:
-            print(f"⚠️  402 Payment Required - Check your IPRoyal account")
+            print(f"⚠️  402 Payment Required - Check your Decodo account")
         else:
             print(f"An error occurred: {e}")
         return False

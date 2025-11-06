@@ -24,13 +24,13 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: PROXY_HOST
-        value: "geo.iproyal.com"
+        value: "us.decodo.com"
       - key: PROXY_PORT
-        value: "12321"
+        value: "10000"
       - key: PROXY_USERNAME
-        value: "TmwjTsVQHgTiXElI"
+        value: "sp12ay6sup"
       - key: PROXY_PASSWORD
-        value: "Topproducer2026_country-us_city-lasvegas_session-pv8aCbkq_lifetime-168h"
+        value: "3mo2E1_R0ksylXqdmN"
       - key: GOOGLE_SHEETS_CREDENTIALS_JSON
         value: "SET_IN_DIGITALOCEAN_DASHBOARD"
       - key: GOOGLE_SHEETS_SPREADSHEET_ID

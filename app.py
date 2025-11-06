@@ -1,5 +1,5 @@
 """
-Proxy Access Portal - A secure web application for agents to access IPRoyal proxy service
+Proxy Access Portal - A secure web application for agents to access Decodo residential proxy service
 """
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -32,17 +32,17 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-12345')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-# Proxy configuration for IPRoyal residential proxies
+# Proxy configuration for Decodo residential proxies
 # Use environment variables for production deployment
 PROXY_CONFIG = {
-    'host': os.environ.get('PROXY_HOST', 'geo.iproyal.com'),
-    'port': int(os.environ.get('PROXY_PORT', '12321')),
-    'username': os.environ.get('PROXY_USERNAME', 'TmwjTsVQHgTiXElI'),
-    'password': os.environ.get('PROXY_PASSWORD', 'Topproducer2026_country-us_city-lasvegas_session-pv8aCbkq_lifetime-168h'),
+    'host': os.environ.get('PROXY_HOST', 'us.decodo.com'),
+    'port': int(os.environ.get('PROXY_PORT', '10000')),
+    'username': os.environ.get('PROXY_USERNAME', 'sp12ay6sup'),
+    'password': os.environ.get('PROXY_PASSWORD', '3mo2E1_R0ksylXqdmN'),
     'country': 'United States',
-    'city': 'Las Vegas',
-    'rotation': 'Sticky IP',
-    'ttl': '7 Day'
+    'city': 'Random',
+    'rotation': 'Rotating',
+    'ttl': 'N/A'
 }
 
 # User database (in production, use a real database)
@@ -247,7 +247,7 @@ def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_
         return False
 
 def submit_form_through_proxy(form_data, trustedform_url):
-    """Submit form to landing page through IPRoyal proxy"""
+    """Submit form to landing page through Decodo residential proxy"""
     proxies = get_proxy_dict()
     
     if not proxies:
@@ -383,9 +383,9 @@ def submit_form_through_proxy(form_data, trustedform_url):
             
             # Check for proxy-specific errors
             if '402' in error_msg or 'Payment Required' in error_msg:
-                error_msg = 'Proxy Error: 402 Payment Required. Your IPRoyal proxy account may need payment or the credentials may be expired. Please check your IPRoyal account status and update the proxy credentials.'
+                error_msg = 'Proxy Error: 402 Payment Required. Your Decodo proxy account may need payment or the credentials may be expired. Please check your Decodo account status and update the proxy credentials.'
             elif 'ProxyError' in error_msg or 'proxy' in error_msg.lower():
-                error_msg = f'Proxy Connection Error: {error_msg}. Please verify your IPRoyal proxy credentials are correct and the account is active.'
+                error_msg = f'Proxy Connection Error: {error_msg}. Please verify your Decodo proxy credentials are correct and the account is active.'
             
             return {
                 'success': False,
@@ -405,7 +405,7 @@ def submit_form_through_proxy(form_data, trustedform_url):
         except Exception as ip_error:
             # Check for proxy errors when getting IP
             if '402' in str(ip_error) or 'Payment Required' in str(ip_error):
-                proxy_ip = 'Proxy Error: 402 Payment Required - Check IPRoyal account'
+                proxy_ip = 'Proxy Error: 402 Payment Required - Check Decodo account'
             elif 'ProxyError' in str(ip_error):
                 proxy_ip = 'Proxy Connection Failed - Check credentials'
             else:
@@ -424,13 +424,13 @@ def submit_form_through_proxy(form_data, trustedform_url):
         
         # Provide helpful error messages for common proxy issues
         if '402' in error_msg or 'Payment Required' in error_msg:
-            error_msg = 'Proxy Error: 402 Payment Required. Your IPRoyal proxy account may need payment or the credentials may be expired. Please check your IPRoyal account dashboard and ensure your account is active and has credits.'
-        elif 'ProxyError' in error_msg or 'proxy' in error_msg.lower():
-            error_msg = f'Proxy Connection Error: {error_msg}. Please verify your IPRoyal proxy credentials in app.py are correct and the account is active.'
-        elif '401' in error_msg or 'Unauthorized' in error_msg:
-            error_msg = 'Proxy Authentication Failed: Invalid username or password. Please check your IPRoyal proxy credentials.'
-        elif '403' in error_msg or 'Forbidden' in error_msg:
-            error_msg = 'Proxy Access Forbidden: Your IPRoyal account may not have permission to use this proxy or the IP may be blocked.'
+            error_msg = 'Proxy Error: 402 Payment Required. Your Decodo proxy account may need payment or the credentials may be expired. Please check your Decodo account dashboard and ensure your account is active and has credits.'
+            elif 'ProxyError' in error_msg or 'proxy' in error_msg.lower():
+                error_msg = f'Proxy Connection Error: {error_msg}. Please verify your Decodo proxy credentials in app.py are correct and the account is active.'
+            elif '401' in error_msg or 'Unauthorized' in error_msg:
+                error_msg = 'Proxy Authentication Failed: Invalid username or password. Please check your Decodo proxy credentials.'
+            elif '403' in error_msg or 'Forbidden' in error_msg:
+                error_msg = 'Proxy Access Forbidden: Your Decodo account may not have permission to use this proxy or the IP may be blocked.'
         
         return {
             'success': False,
