@@ -425,12 +425,12 @@ def submit_form_through_proxy(form_data, trustedform_url):
         # Provide helpful error messages for common proxy issues
         if '402' in error_msg or 'Payment Required' in error_msg:
             error_msg = 'Proxy Error: 402 Payment Required. Your Decodo proxy account may need payment or the credentials may be expired. Please check your Decodo account dashboard and ensure your account is active and has credits.'
-            elif 'ProxyError' in error_msg or 'proxy' in error_msg.lower():
-                error_msg = f'Proxy Connection Error: {error_msg}. Please verify your Decodo proxy credentials in app.py are correct and the account is active.'
-            elif '401' in error_msg or 'Unauthorized' in error_msg:
-                error_msg = 'Proxy Authentication Failed: Invalid username or password. Please check your Decodo proxy credentials.'
-            elif '403' in error_msg or 'Forbidden' in error_msg:
-                error_msg = 'Proxy Access Forbidden: Your Decodo account may not have permission to use this proxy or the IP may be blocked.'
+        elif 'ProxyError' in error_msg or 'proxy' in error_msg.lower():
+            error_msg = f'Proxy Connection Error: {error_msg}. Please verify your Decodo proxy credentials in app.py are correct and the account is active.'
+        elif '401' in error_msg or 'Unauthorized' in error_msg:
+            error_msg = 'Proxy Authentication Failed: Invalid username or password. Please check your Decodo proxy credentials.'
+        elif '403' in error_msg or 'Forbidden' in error_msg:
+            error_msg = 'Proxy Access Forbidden: Your Decodo account may not have permission to use this proxy or the IP may be blocked.'
         
         return {
             'success': False,
