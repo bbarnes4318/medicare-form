@@ -122,14 +122,41 @@ def save_to_google_sheets(form_data, trustedform_url, proxy_ip=None, submission_
         # Handle case where JSON might be stored with escaped quotes or as string
         json_str = GOOGLE_SHEETS_CREDENTIALS_JSON.strip()
         
-        # Remove surrounding quotes if present
+        # Debug: Log what we received (first 200 chars only for security)
+        print(f"DEBUG: GOOGLE_SHEETS_CREDENTIALS_JSON length: {len(json_str)}")
+        print(f"DEBUG: First 200 chars: {json_str[:200]}")
+        print(f"DEBUG: Starts with {{: {json_str.startswith('{')}")
+        
+        # Check if it's the placeholder
+        if json_str == "SET_IN_DIGITALOCEAN_DASHBOARD" or not json_str or json_str == '""':
+            print("ERROR: GOOGLE_SHEETS_CREDENTIALS_JSON is not set or is placeholder!")
+            return False
+        
+        # Remove surrounding quotes if present (DigitalOcean might add them)
         if json_str.startswith('"') and json_str.endswith('"'):
             json_str = json_str[1:-1]
+            # Unescape quotes
+            json_str = json_str.replace('\\"', '"')
+        
+        # Handle double-escaped JSON (DigitalOcean sometimes double-escapes)
+        if json_str.startswith('\\"'):
+            json_str = json_str[2:-2] if json_str.endswith('\\"') else json_str[2:]
         
         # Replace escaped newlines with actual newlines for private key
-        json_str = json_str.replace('\\n', '\n')
+        # Handle both single and double escaping
+        json_str = json_str.replace('\\\\n', '\n')  # Double escaped
+        json_str = json_str.replace('\\n', '\n')     # Single escaped
         
-        creds_dict = json.loads(json_str)
+        # Try to parse JSON
+        try:
+            creds_dict = json.loads(json_str)
+        except json.JSONDecodeError as je:
+            print(f"ERROR: JSON parse failed: {je}")
+            print(f"DEBUG: JSON string (first 500 chars): {json_str[:500]}")
+            # Try one more time with unescaping
+            import codecs
+            json_str = codecs.decode(json_str, 'unicode_escape')
+            creds_dict = json.loads(json_str)
         
         # Validate required fields
         required_fields = ['type', 'project_id', 'private_key', 'client_email']
