@@ -361,11 +361,16 @@ def submit_form_through_proxy(form_data, trustedform_url):
                     timeout=10,  # Shorter timeout for testing
                     allow_redirects=True
                 )
+                print(f"DEBUG: Tried {test_url} (JSON) - Status: {response.status_code}")
                 # If we get a 200, 201, or 302, consider it successful
                 if response.status_code in [200, 201, 302]:
+                    print(f"SUCCESS: Found working endpoint: {test_url} (JSON)")
                     submit_url = test_url  # Update submit_url to the working one
                     break
+                else:
+                    print(f"DEBUG: Response text (first 200 chars): {response.text[:200]}")
             except Exception as e:
+                print(f"DEBUG: Error trying {test_url} (JSON): {str(e)}")
                 last_error = e
                 pass
             
@@ -381,17 +386,23 @@ def submit_form_through_proxy(form_data, trustedform_url):
                     timeout=10,
                     allow_redirects=True
                 )
+                print(f"DEBUG: Tried {test_url} (form-urlencoded) - Status: {response.status_code}")
                 # If we get a 200, 201, or 302, consider it successful
                 if response.status_code in [200, 201, 302]:
+                    print(f"SUCCESS: Found working endpoint: {test_url} (form-urlencoded)")
                     submit_url = test_url  # Update submit_url to the working one
                     break
+                else:
+                    print(f"DEBUG: Response text (first 200 chars): {response.text[:200]}")
             except Exception as e:
+                print(f"DEBUG: Error trying {test_url} (form-urlencoded): {str(e)}")
                 last_error = e
                 pass
         
-        # If all endpoints failed, use the last error
+        # If all endpoints failed, check what happened
         if response is None:
-            error_msg = str(last_error) if last_error else 'Unknown error'
+            error_msg = str(last_error) if last_error else 'Unknown error - no response from any endpoint'
+            print(f"ERROR: All endpoints failed. Last error: {error_msg}")
             
             # Check for proxy-specific errors
             if '402' in error_msg or 'Payment Required' in error_msg:
@@ -402,6 +413,17 @@ def submit_form_through_proxy(form_data, trustedform_url):
             return {
                 'success': False,
                 'error': f'Could not find working endpoint. {error_msg}',
+                'proxy_ip': None
+            }
+        
+        # If we got a response but it's not a success status code
+        if response.status_code not in [200, 201, 302]:
+            print(f"WARNING: Got response but status code is {response.status_code}")
+            print(f"Response text (first 500 chars): {response.text[:500]}")
+            return {
+                'success': False,
+                'error': f'Form submission returned status code {response.status_code}. Response: {response.text[:200]}',
+                'status_code': response.status_code,
                 'proxy_ip': None
             }
         
